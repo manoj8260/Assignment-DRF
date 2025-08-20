@@ -24,3 +24,7 @@ env/
 # OS junk
 .DS_Store
 Thumbs.db
+
+# Ignore Python cache
+__pycache__/
+*.pyc
