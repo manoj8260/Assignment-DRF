@@ -2,7 +2,8 @@ from django.db import models
 from django.contrib.auth.models import   PermissionsMixin,AbstractBaseUser
 from django.utils.translation import gettext_lazy as _
 from apps.authentication.managers import  UserManager
-# from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import AuthenticationFailed
 # Create your models here.
 
 class User(AbstractBaseUser , PermissionsMixin):
@@ -50,13 +51,16 @@ class User(AbstractBaseUser , PermissionsMixin):
         """
         return f"{self.first_name} {self.last_name}".strip()
     
-    def tokens(self):
-        # refresh = RefreshToken.for_user(self)
-        # return {
-        #     'refresh': str(refresh),  
-        #      'access': str(refresh.access_token)
-        # }
-        pass
+    def get_tokens(self):
+        if  not self.is_active :
+            raise AuthenticationFailed('User is not active')
+        
+        refresh = RefreshToken.for_user(self)
+        return {
+            'refresh': str(refresh),  
+            'access': str(refresh.access_token)
+        }
+        
         
         
 
