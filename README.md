@@ -366,23 +366,7 @@ Assignment-DRF/
 |__ backups/  
 ```
 
-## 🧪 Testing
 
-### Run All Tests
-
-```bash
-python manage.py test
-```
-
-### Test Specific Apps
-
-```bash
-# Test authentication
-python manage.py test apps.authentication
-
-# Test recipes and ratings
-python manage.py test apps.recipes
-```
 
 ### Manual API Testing
 
