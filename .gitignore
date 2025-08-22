@@ -28,3 +28,11 @@ Thumbs.db
 # Ignore Python cache
 __pycache__/
 *.pyc
+
+# Ignore all files inside media folder but keep the folder
+/media/*
+!/media/.gitkeep
+
+# Ignore all files inside backups folder but keep the folder
+/backups/*
+!/backups/.gitkeep
