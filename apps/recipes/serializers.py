@@ -2,7 +2,10 @@ from rest_framework import serializers
 from apps.recipes.models import  Recipes ,RecipeRatings
 
 class RecipesSeriallizers(serializers.ModelSerializer):
-    
+    """
+    Serializer for creating and retrieving recipes.
+    Only sellers are allowed to create recipes.
+    """
     class Meta :
         model = Recipes
         fields =('id','name','description','recipe_image','created_at','updated_at','created_by')
@@ -32,7 +35,10 @@ class RecipesSeriallizers(serializers.ModelSerializer):
    
    
 class  RecipeRatingSerializer(serializers.ModelSerializer):
-    
+    """
+    Serializer for creating and retrieving recipe ratings.
+    Each user can rate a recipe only once.
+    """
     class Meta :
         model = RecipeRatings
         fields = ('id','recipe','user','rating')  

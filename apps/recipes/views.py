@@ -5,10 +5,18 @@ from apps.recipes.models import Recipes, RecipeRatings
 from rest_framework.permissions import IsAuthenticated
 from apps.recipes.permissions import IsSellerOrReadOnly, IsCustomerOrReadOnly
 from apps.recipes.tasks import resize_recipe_image  ,backup_user_data
+from django.http import JsonResponse
+from apps.recipes.tasks import send_daily_emails
+from rest_framework.views import APIView
+from rest_framework.response import Response
 import os
 
 
 class RecipesViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for creating, updating, deleting, and listing recipes.
+    Only sellers can create or modify recipes.
+    """
     queryset = Recipes.objects.all()
     serializer_class = RecipesSeriallizers
     permission_classes = [IsAuthenticated, IsSellerOrReadOnly]
@@ -23,6 +31,9 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
 
 class RecipeRatingView(generics.ListCreateAPIView):
+    """
+    List all ratings for recipes and allow customers to create a rating.
+    """
     queryset = RecipeRatings.objects.all()
     serializer_class = RecipeRatingSerializer
     permission_classes = [IsAuthenticated, IsCustomerOrReadOnly]
@@ -32,13 +43,14 @@ class RecipeRatingView(generics.ListCreateAPIView):
 
 
 class RecipeRatingDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    Retrieve, update, or delete a specific recipe rating.
+    Only the customer who created the rating can modify it.
+    """
     queryset = RecipeRatings.objects.all()
     serializer_class = RecipeRatingSerializer
     permission_classes = [IsAuthenticated, IsCustomerOrReadOnly]
     
-from django.http import JsonResponse
-
-from apps.recipes.tasks import send_daily_emails
 
 
 def trigger_daily_emails(request):
@@ -51,9 +63,6 @@ def trigger_daily_emails(request):
         return JsonResponse({"status": "success", "message": "Daily email task triggered."})
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)})
-from rest_framework.views import APIView
-from rest_framework.response import Response
-
 
 class TriggerBackupView(APIView):
     def post(self, request):

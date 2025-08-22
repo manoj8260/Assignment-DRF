@@ -24,4 +24,5 @@ class UserModelAdmin(UserAdmin):
         }),
     )
 
+# register User model in admin panel
 admin.site.register(User,UserModelAdmin)    

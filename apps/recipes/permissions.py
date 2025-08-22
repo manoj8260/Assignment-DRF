@@ -2,7 +2,7 @@ from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 class IsSellerOrReadOnly(BasePermission):
     """
-    - Customers (read-only): can list and retrieve recipes.
+    - Customers : can list and retrieve recipes.
     - Sellers: can create, update, and delete.
     """
 

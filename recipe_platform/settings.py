@@ -36,7 +36,6 @@ THIRD_PARTY_APPS=[
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     'django_celery_beat',
-    # 'django_celery_results',
 ]
 PROJECT_APPS =[
      "apps.authentication",
@@ -74,7 +73,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "recipe_platform.wsgi.application"
 
 
-# Database
+# Database (MySQL)
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
@@ -88,7 +87,9 @@ DATABASES = {
     }
 }
 
+# Custom User Model
 AUTH_USER_MODEL = 'authentication.User'
+
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
@@ -132,22 +133,22 @@ MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# for restframwwork
+# REST Framework Config
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
      'DEFAULT_THROTTLE_CLASSES': [
-        # 'rest_framework.throttling.UserRateThrottle',   # Limits authenticated users
-        # 'rest_framework.throttling.AnonRateThrottle',   # Limits anonymous users
+        'rest_framework.throttling.UserRateThrottle',   
+        'rest_framework.throttling.AnonRateThrottle',   
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'user': '10/day',  # Authenticated users can make 10 requests/day
-        'anon': '1/day',   # Anonymous users can make 1 requests/day
+        'user': '100/day',  
+        'anon': '10/day',   
     }
     
 }
-
+# Simple JWT Config
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
@@ -155,7 +156,6 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': False,
 }
 
-# //////////////////////////////////////////////////////////////////
 
 
 # Celery Configuration
@@ -171,13 +171,6 @@ CELERY_TIMEZONE = 'UTC'
 # Celery beat scheduler
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
-# AWS S3 Configuration
-# AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
-# AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
-# AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
-# AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME', default='us-east-1')
-# AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
-# AWS_DEFAULT_ACL = None
 
 # Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

@@ -7,11 +7,15 @@ from rest_framework_simplejwt.exceptions import AuthenticationFailed
 # Create your models here.
 
 class User(AbstractBaseUser , PermissionsMixin):
-     
+    """
+    Custom user model 
+    Supports two types of users: customer and seller.
+    """
     USER_TYPE_CHOICES = (
         ('customer', _('Customer')),
         ('seller', _('Seller')),
     )
+    # user model fields
     email = models.EmailField(_('email address'), unique=True,max_length=255)
     first_name = models.CharField(_('first name'), max_length=30, blank=True)
     last_name = models.CharField(_('last name'), max_length=30, blank=True)
@@ -29,6 +33,7 @@ class User(AbstractBaseUser , PermissionsMixin):
     objects = UserManager()
 
     def __str__(self):
+        """Return the email of the user"""
         return self.email
     
     
@@ -52,6 +57,10 @@ class User(AbstractBaseUser , PermissionsMixin):
         return f"{self.first_name} {self.last_name}".strip()
     
     def get_tokens(self):
+        """
+        Return JWT refresh and access tokens for the user.
+        Raises error if user is inactive.
+        """
         if  not self.is_active :
             raise AuthenticationFailed('User is not active')
         

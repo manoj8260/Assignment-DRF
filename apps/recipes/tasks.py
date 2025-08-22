@@ -27,7 +27,7 @@ def resize_recipe_image(self, recipe_id, image_path):
         original_size = os.path.getsize(full_path)
 
         with Image.open(full_path) as image:
-            image.thumbnail((800, 600), Image.Resampling.LANCZOS)
+            image.thumbnail((500, 400), Image.Resampling.LANCZOS)
             if image.mode in ('RGBA', 'P'):
                 image = image.convert('RGB')
             image.save(full_path, optimize=True, quality=85)

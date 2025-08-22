@@ -4,6 +4,9 @@ from apps.authentication.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Recipes(models.Model):
+    """
+    Model representing a recipe created by a seller.
+    """
     name = models.CharField(
         max_length=255, 
         help_text=_("Name of the recipe")
@@ -38,6 +41,9 @@ class Recipes(models.Model):
         
 
 class RecipeRatings(models.Model):
+    """
+    Model representing a user's rating for a specific recipe.
+    """
     recipe = models.ForeignKey(
         Recipes,
         on_delete=models.CASCADE,
