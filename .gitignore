@@ -3,8 +3,9 @@ __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
+*.pyc
 
-# Virtual envs
+# Virtual Environments
 .env
 venv/
 env/
@@ -12,33 +13,31 @@ env/
 # Django
 *.sqlite3
 *.log
-
-# Migrations cache
 */migrations/__pycache__/
-*.pyc
+staticfiles/
 
-# IDE/Editor
-.vscode/
-.idea/
-
-# OS junk
-.DS_Store
-Thumbs.db
-
-# Ignore Python cache
-__pycache__/
-*.pyc
-
-# Ignore all files inside media folder but keep the folder
+# Media & Backups
+# Track folders but ignore all files inside
 /media/*
 !/media/.gitkeep
-
-# Ignore all files inside backups folder but keep the folder
 /backups/*
 !/backups/.gitkeep
 
-# Make sure Git uses LF line endings for these files
+# IDE / Editor
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Line Endings
 * text=auto
 *.sh text eol=lf
 *.env text eol=lf
 *.py text eol=lf
+
+# Celery / Tasks
+celerybeat-schedule
