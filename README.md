@@ -338,32 +338,32 @@ Assignment-DRF/
 ├── manage.py
 ├── requirements.txt
 ├── README.md
-├── recipe_platform/              # Main project settings
-│   ├── __init__.py
-│   ├── settings.py
-│   ├── urls.py
-│   ├── wsgi.py
-│   └── asgi.py
+├── recipe_platform/ # Main project settings
+│ ├── init.py
+│ ├── settings.py
+│ ├── urls.py
+│ ├── wsgi.py
+│ └── asgi.py
 ├── apps/
-│   ├── authentication/           # User authentication app
-│   │   ├── __init__.py
-│   │   ├── models.py            # User model with user_type
-│   │   ├── serializers.py
-│   │   ├── views.py
-│   │   └── urls.py
-│   ├── recipes/                  # Recipe management app
-│   │   ├── __init__.py
-│   │   ├── models.py            # Recipes and RecipeRatings models
-│   │   ├── serializers.py
-│   │   ├── views.py
-│   │   ├── urls.py
-│   │   └── permissions.py
-│   └── utils/                    # Shared utilities
-│       ├── __init__.py
-│       └── pagination.py        # Custom pagination classes
+│ ├── authentication/ # User authentication app
+│ │ ├── init.py
+│ │ ├── models.py
+│ │ ├── serializers.py
+│ │ ├── views.py
+│ │ └── urls.py
+│ ├── recipes/ # Recipe management app
+│ │ ├── init.py
+│ │ ├── models.py
+│ │ ├── serializers.py
+│ │ ├── views.py
+│ │ ├── urls.py
+│ │ └── permissions.py
+│ └── utils/
+│ ├── init.py
+│ └── pagination.py
 ├── media/
-│   └── recipes/                  # Recipe images storage
-└── db.sqlite3                    # SQLite database
+ └── recipes/ # Recipe images storage
+
 ```
 
 ## 🧪 Testing
