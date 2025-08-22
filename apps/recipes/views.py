@@ -9,6 +9,7 @@ from django.http import JsonResponse
 from apps.recipes.tasks import send_daily_emails
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from apps.recipes.paginations import CusttomPagination
 import os
 
 
@@ -20,6 +21,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
     queryset = Recipes.objects.all()
     serializer_class = RecipesSeriallizers
     permission_classes = [IsAuthenticated, IsSellerOrReadOnly]
+    pagination_class =CusttomPagination
 
     def perform_create(self, serializer):
         recipe = serializer.save()
