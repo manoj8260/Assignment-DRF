@@ -78,12 +78,96 @@ A comprehensive Django REST Framework API for managing recipes with user authent
    python manage.py createsuperuser
    ```
 
-7. **Start the development server**
-   ```bash
-   python manage.py runserver
-   ```
+# Redis and Celery Server Setup
 
-The API will be available at `http://127.0.0.1:8000/`
+This project uses Redis as a message broker and Celery for handling background tasks.
+
+## Prerequisites
+
+- Redis server installed
+- Python dependencies installed (`pip install -r requirements.txt`)
+- Project includes: Celery 5.5.3, Redis 6.4.0, django-celery-beat 2.8.1
+
+## Installing Redis
+
+### Ubuntu/Debian:
+```bash
+sudo apt update
+sudo apt install redis-server
+```
+
+### macOS:
+```bash
+brew install redis
+```
+
+### Windows:
+Download from: https://github.com/microsoftarchive/redis/releases
+Or use Docker: `docker run -d -p 6379:6379 redis:alpine`
+
+## Starting the Servers
+
+### 1. Start Redis Server
+```bash
+redis-server
+```
+
+### 2. Start Django Development Server
+```bash
+python manage.py runserver
+```
+
+### 3. Start Celery Worker (in a new terminal)
+```bash
+celery -A Assignment_DRF worker --loglevel=info
+```
+
+### 4. Start Celery Beat Scheduler (in a new terminal)
+```bash
+celery -A Assignment_DRF beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+```
+
+## Verify Setup
+
+### Check Redis Connection:
+```bash
+redis-cli ping
+# Should return: PONG
+```
+
+### Check Celery Worker Status:
+```bash
+celery -A Assignment_DRF status
+```
+
+## Optional: Celery Monitoring
+
+Install and start Celery Flower for task monitoring:
+```bash
+pip install flower
+celery -A Assignment_DRF flower
+```
+Visit: http://localhost:5555
+
+## Troubleshooting
+
+- **Redis connection refused**: Ensure Redis server is running
+- **Celery tasks not executing**: Verify Celery worker is active
+- **Import errors**: Check project name in Celery commands matches your Django project
+
+## Running All Services
+
+For development, you need these running simultaneously:
+1. **Redis server** (`redis-server`)
+2. **Django server** (`python manage.py runserver`)
+3. **Celery worker** (`celery -A Assignment_DRF worker --loglevel=info`)
+4. **Celery beat** (`celery -A Assignment_DRF beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler`)
+
+## Note
+All dependencies are already included in requirements.txt:
+- celery==5.5.3
+- redis==6.4.0  
+- django-celery-beat==2.8.1
 
 ## 📚 API Endpoints
 
