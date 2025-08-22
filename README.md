@@ -5,17 +5,18 @@
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
 
-A comprehensive Django REST Framework API for managing recipes with user authentication, recipe creation, and rating system using JWT tokens.
+A comprehensive Django REST Framework API for managing recipes with user authentication, recipe creation by sellers, and rating system using JWT tokens. Supports both seller and customer user types.
 
 ## 🚀 Features
 
-- **User Management**: User registration, login, and JWT-based authentication
-- **Recipe Operations**: Create, read, update, and delete recipes
-- **Recipe Ratings**: Users can rate and review recipes
+- **User Management**: User registration with seller/customer types and JWT-based authentication
+- **Recipe Management**: Sellers can create, read, update, and delete recipes with images
+- **Recipe Ratings**: Customers can rate recipes (1-5 stars) with unique rating per user per recipe
 - **JWT Authentication**: Secure token-based authentication with access/refresh tokens
-- **Data Validation**: Robust input validation using DRF serializers
-- **RESTful Design**: Clean API endpoints following REST principles
-- **User Permissions**: Users can only modify their own recipes and ratings
+- **User Types**: Separate roles for sellers (create recipes) and customers (rate recipes)
+- **Image Upload**: Recipe images with file upload support
+- **Pagination**: Paginated API responses for better performance
+- **Data Validation**: Robust input validation using DRF serializers with custom validators
 
 ## 📋 Table of Contents
 
@@ -91,45 +92,47 @@ The API will be available at `http://127.0.0.1:8000/`
 ### Authentication Endpoints
 | Method | Endpoint | Description | Auth Required |
 |--------|----------|-------------|---------------|
-| POST | `/auth/register/` | User registration | ❌ |
+| POST | `/auth/register/` | User registration (seller/customer) | ❌ |
 | POST | `/auth/login/` | User login (get JWT tokens) | ❌ |
 | POST | `/auth/token/refresh/` | Refresh access token | ❌ |
 | POST | `/auth/logout/` | User logout | ✅ |
 
 ### Recipe Endpoints
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/recipes/` | List all recipes | ❌ |
-| POST | `/recipes/` | Create new recipe | ✅ |
-| GET | `/recipes/{id}/` | Get recipe details | ❌ |
-| PUT | `/recipes/{id}/` | Update recipe (owner only) | ✅ |
-| PATCH | `/recipes/{id}/` | Partial update recipe | ✅ |
-| DELETE | `/recipes/{id}/` | Delete recipe (owner only) | ✅ |
+| Method | Endpoint | Description | Auth Required | User Type |
+|--------|----------|-------------|---------------|-----------|
+| GET | `/recipes/` | List all recipes (paginated) | ❌ | Any |
+| POST | `/recipes/` | Create new recipe | ✅ | Seller only |
+| GET | `/recipes/{id}/` | Get recipe details | ❌ | Any |
+| PUT | `/recipes/{id}/` | Update recipe (owner only) | ✅ | Seller (owner) |
+| PATCH | `/recipes/{id}/` | Partial update recipe | ✅ | Seller (owner) |
+| DELETE | `/recipes/{id}/` | Delete recipe (owner only) | ✅ | Seller (owner) |
 
 ### Recipe Rating Endpoints
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/recipes/{recipe_id}/ratings/` | Get recipe ratings | ❌ |
-| POST | `/recipes/{recipe_id}/ratings/` | Rate a recipe | ✅ |
-| PUT | `/recipes/{recipe_id}/ratings/{id}/` | Update your rating | ✅ |
-| DELETE | `/recipes/{recipe_id}/ratings/{id}/` | Delete your rating | ✅ |
+| Method | Endpoint | Description | Auth Required | User Type |
+|--------|----------|-------------|---------------|-----------|
+| GET | `/recipes/{recipe_id}/ratings/` | Get recipe ratings (paginated) | ❌ | Any |
+| POST | `/recipes/{recipe_id}/ratings/` | Rate a recipe | ✅ | Customer |
+| PUT | `/recipes/{recipe_id}/ratings/{id}/` | Update your rating | ✅ | Customer (owner) |
+| DELETE | `/recipes/{recipe_id}/ratings/{id}/` | Delete your rating | ✅ | Customer (owner) |
 
-### Query Parameters
+### Pagination Parameters
 
-- `?search=keyword` - Search recipes by title or ingredients
-- `?ordering=created_at` - Sort by creation date
-- `?ordering=-rating` - Sort by rating (descending)
-- `?limit=10&offset=20` - Pagination parameters
+All list endpoints support pagination:
+- `?page=1` - Page number (default: 1)
+- `?page_size=10` - Number of items per page (default: varies by endpoint)
+
+Example: `GET /api/recipes/?page=2&page_size=5`
 
 ## 🔐 Authentication
 
-This project uses **JWT (JSON Web Token) authentication**. You'll receive two tokens:
+This project uses **JWT (JSON Web Token) authentication** with user types (seller/customer). You'll receive:
 - **Access Token**: For API requests (short-lived)
 - **Refresh Token**: To get new access tokens (long-lived)
+- **User Details**: Including user type, email, and full name
 
 ### Getting JWT Tokens
 
-1. **Register a new user:**
+1. **Register a new seller:**
    ```bash
    curl -X POST http://127.0.0.1:8000/api/auth/register/ \
      -H "Content-Type: application/json" \
@@ -138,11 +141,26 @@ This project uses **JWT (JSON Web Token) authentication**. You'll receive two to
        "email": "chef@example.com",
        "password": "securepassword123",
        "first_name": "John",
-       "last_name": "Chef"
+       "last_name": "Chef",
+       "user_type": "seller"
      }'
    ```
 
-2. **Login to get JWT tokens:**
+2. **Register a new customer:**
+   ```bash
+   curl -X POST http://127.0.0.1:8000/api/auth/register/ \
+     -H "Content-Type: application/json" \
+     -d '{
+       "username": "foodie456",
+       "email": "foodie@example.com",
+       "password": "securepassword123",
+       "first_name": "Jane",
+       "last_name": "Foodie",
+       "user_type": "customer"
+     }'
+   ```
+
+3. **Login to get JWT tokens:**
    ```bash
    curl -X POST http://127.0.0.1:8000/api/auth/login/ \
      -H "Content-Type: application/json" \
@@ -155,18 +173,23 @@ This project uses **JWT (JSON Web Token) authentication**. You'll receive two to
    **Response:**
    ```json
    {
-     "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
-     "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+     "message": "Login successfully",
+     "user_details": {
+       "email": "chef@example.com",
+       "full_name": "John Chef",
+       "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+       "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+     }
    }
    ```
 
-3. **Use access token in requests:**
+4. **Use access token in requests:**
    ```bash
    curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
      http://127.0.0.1:8000/api/recipes/
    ```
 
-4. **Refresh access token when expired:**
+5. **Refresh access token when expired:**
    ```bash
    curl -X POST http://127.0.0.1:8000/api/auth/token/refresh/ \
      -H "Content-Type: application/json" \
@@ -175,90 +198,138 @@ This project uses **JWT (JSON Web Token) authentication**. You'll receive two to
 
 ## 💡 Usage Examples
 
-### Create a New Recipe
+### Create a New Recipe (Seller Only)
 
+```bash
+curl -X POST http://127.0.0.1:8000/api/recipes/ \
+  -H "Content-Type: multipart/form-data" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -F 'name=Spaghetti Carbonara' \
+  -F 'description=Classic Italian pasta dish with eggs, cheese, and guanciale. Creamy texture without cream!' \
+  -F 'recipe_image=@/path/to/carbonara.jpg'
+```
+
+**Or with JSON (without image):**
 ```bash
 curl -X POST http://127.0.0.1:8000/api/recipes/ \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -d '{
-    "title": "Spaghetti Carbonara",
-    "description": "Classic Italian pasta dish with eggs, cheese, and bacon",
-    "ingredients": "400g spaghetti, 200g guanciale, 4 eggs, 100g pecorino cheese, black pepper",
-    "instructions": "1. Cook pasta al dente. 2. Fry guanciale until crispy. 3. Mix eggs and cheese. 4. Combine all ingredients off heat.",
-    "prep_time": 15,
-    "cook_time": 20,
-    "servings": 4,
-    "difficulty": "medium"
+    "name": "Spaghetti Carbonara",
+    "description": "Classic Italian pasta dish with eggs, cheese, and guanciale. Creamy texture without cream!"
   }'
 ```
 
-### Get All Recipes
+### Get All Recipes (Paginated)
 
 ```bash
+# First page (default)
 curl -X GET http://127.0.0.1:8000/api/recipes/
+
+# Second page with 5 items per page
+curl -X GET "http://127.0.0.1:8000/api/recipes/?page=2&page_size=5"
 ```
 
-### Search Recipes
-
-```bash
-curl -X GET "http://127.0.0.1:8000/api/recipes/?search=pasta"
+**Response:**
+```json
+{
+  "count": 25,
+  "next": "http://127.0.0.1:8000/api/recipes/?page=3&page_size=5",
+  "previous": "http://127.0.0.1:8000/api/recipes/?page=1&page_size=5",
+  "results": [
+    {
+      "id": 1,
+      "name": "Spaghetti Carbonara",
+      "description": "Classic Italian pasta dish...",
+      "recipe_image": "http://127.0.0.1:8000/media/recipes/carbonara.jpg",
+      "created_at": "2024-01-15T10:30:00Z",
+      "updated_at": "2024-01-15T10:30:00Z",
+      "created_by": {
+        "id": 1,
+        "first_name": "John",
+        "last_name": "Chef"
+      }
+    }
+  ]
+}
 ```
 
-### Rate a Recipe
+### Rate a Recipe (Customer Only)
 
 ```bash
 curl -X POST http://127.0.0.1:8000/api/recipes/1/ratings/ \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -d '{
-    "rating": 5,
-    "comment": "Absolutely delicious! Perfect recipe."
+    "rating": 5
   }'
 ```
 
-### Update Your Own Recipe
+### Update Your Own Recipe (Seller Only)
 
 ```bash
-curl -X PUT http://127.0.0.1:8000/api/recipes/1/ \
+curl -X PATCH http://127.0.0.1:8000/api/recipes/1/ \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -d '{
-    "title": "Updated Spaghetti Carbonara",
-    "description": "Updated classic Italian pasta dish",
-    "ingredients": "Updated ingredients list",
-    "instructions": "Updated cooking instructions"
+    "name": "Perfect Spaghetti Carbonara",
+    "description": "Updated: The most authentic Italian pasta dish with step-by-step instructions"
   }'
+```
+
+### Get Recipe Ratings (Paginated)
+
+```bash
+curl -X GET http://127.0.0.1:8000/api/recipes/1/ratings/
 ```
 
 ## 🗄️ Models
 
 ### User Model (Extended Django User)
 - `username` - Unique username
-- `email` - User email
+- `email` - User email address
 - `first_name` - User's first name
 - `last_name` - User's last name
 - `password` - Hashed password
+- `user_type` - Either "seller" or "customer"
 
-### Recipe Model
-- `title` - Recipe title
-- `description` - Recipe description
-- `ingredients` - List of ingredients
-- `instructions` - Cooking instructions
-- `prep_time` - Preparation time (minutes)
-- `cook_time` - Cooking time (minutes)
-- `servings` - Number of servings
-- `difficulty` - Difficulty level (easy/medium/hard)
-- `author` - Recipe creator (Foreign Key to User)
-- `created_at` - Creation timestamp
-- `updated_at` - Last update timestamp
+**User Types:**
+- **Seller**: Can create, update, and delete recipes
+- **Customer**: Can rate and review recipes
 
-### RecipeRating Model
-- `recipe` - Related recipe (Foreign Key)
-- `user` - Rating author (Foreign Key to User)
-- `rating` - Rating score (1-5)
-- `comment` - Optional rating comment
-- `created_at` - Rating timestamp
+### Recipes Model
+```python
+class Recipes(models.Model):
+    name = models.CharField(max_length=255)           # Recipe name
+    description = models.TextField()                   # Recipe description
+    recipe_image = models.ImageField()                # Recipe image (optional)
+    created_at = models.DateTimeField()               # Creation timestamp
+    updated_at = models.DateTimeField()               # Last update timestamp
+    created_by = models.ForeignKey(User)              # Recipe creator (seller only)
+```
+
+**Business Rules:**
+- Only sellers can create recipes
+- Recipe creators can update/delete their own recipes
+- Recipe images are stored in `media/recipes/` folder
+- Recipes display as: "Recipe Name by Creator's First Name"
+
+### RecipeRatings Model
+```python
+class RecipeRatings(models.Model):
+    recipe = models.ForeignKey(Recipes)               # Related recipe
+    user = models.ForeignKey(User)                    # Rating author
+    rating = models.IntegerField()                    # Rating (1-5 stars)
+    created_at = models.DateTimeField()               # Rating timestamp
+    updated_at = models.DateTimeField()               # Last update timestamp
+```
+
+**Business Rules:**
+- Rating must be between 1-5 stars (validated)
+- One rating per user per recipe (unique constraint)
+- Any authenticated user can rate any recipe
+- Users can update/delete their own ratings only
+- Ratings display as: "user@email.com rated Recipe Name → 5*"
 
 ## 📁 Project Structure
 
@@ -276,23 +347,22 @@ Assignment-DRF/
 ├── apps/
 │   ├── authentication/           # User authentication app
 │   │   ├── __init__.py
-│   │   ├── models.py
+│   │   ├── models.py            # User model with user_type
 │   │   ├── serializers.py
 │   │   ├── views.py
 │   │   └── urls.py
 │   ├── recipes/                  # Recipe management app
 │   │   ├── __init__.py
-│   │   ├── models.py
+│   │   ├── models.py            # Recipes and RecipeRatings models
 │   │   ├── serializers.py
 │   │   ├── views.py
 │   │   ├── urls.py
 │   │   └── permissions.py
-│   └── ratings/                  # Recipe ratings app
+│   └── utils/                    # Shared utilities
 │       ├── __init__.py
-│       ├── models.py
-│       ├── serializers.py
-│       ├── views.py
-│       └── urls.py
+│       └── pagination.py        # Custom pagination classes
+├── media/
+│   └── recipes/                  # Recipe images storage
 └── db.sqlite3                    # SQLite database
 ```
 
@@ -310,58 +380,66 @@ python manage.py test
 # Test authentication
 python manage.py test apps.authentication
 
-# Test recipes
+# Test recipes and ratings
 python manage.py test apps.recipes
-
-# Test ratings
-python manage.py test apps.ratings
 ```
 
 ### Manual API Testing
 
-Use tools like Postman, Insomnia, or curl to test endpoints. Import the API documentation or create requests manually using the examples above.
+Use tools like Postman, Insomnia, or curl to test endpoints. Test different user types:
 
-## 🔧 Development Features
+1. **As a Seller:**
+   - Register with `user_type: "seller"`
+   - Create, update, delete recipes
+   - Cannot rate recipes (if restricted)
 
-### Admin Interface
+2. **As a Customer:**
+   - Register with `user_type: "customer"`
+   - Rate recipes (1-5 stars)
+   - Cannot create recipes
 
-Access the Django admin at `http://127.0.0.1:8000/admin/` to:
-- Manage users
-- View and edit recipes
-- Monitor ratings
-- Access system logs
+## 🔧 Key Features Explained
 
-### API Documentation
+### Pagination
+- All list endpoints return paginated results
+- Includes `count`, `next`, `previous`, and `results`
+- Customizable page size via query parameters
 
-Visit `http://127.0.0.1:8000/api/` for the DRF browsable API interface.
+### User Type Permissions
+- **Sellers** can only create recipes (enforced by model constraint)
+- **Customers** can rate any recipe
+- Users can only modify their own content
 
-## 🚀 Common Use Cases
+### Image Handling
+- Recipe images are optional
+- Uploaded to `media/recipes/` folder
+- Use multipart/form-data for file uploads
 
-### For Recipe Creators:
-1. Register and login to get JWT tokens
-2. Create recipes with detailed instructions
-3. Edit and update your own recipes
-4. Delete recipes you no longer want
+### Unique Rating Constraint
+- One rating per user per recipe
+- Prevents duplicate ratings
+- Updates existing rating if user rates again
 
-### For Recipe Browsers:
-1. Browse all available recipes without authentication
-2. Search for specific recipes
-3. View detailed recipe information
-4. Register to rate and comment on recipes
+## 🚀 Common Workflows
 
-### For Recipe Raters:
-1. Login with JWT tokens
-2. Rate recipes from 1-5 stars
-3. Add comments to your ratings
-4. Update or delete your own ratings
+### For Sellers:
+1. Register with `user_type: "seller"`
+2. Login to get JWT tokens
+3. Create recipes with descriptions and images
+4. Update your own recipes
+5. View ratings on your recipes
 
-## 🤝 Contributing
+### For Customers:
+1. Register with `user_type: "customer"`
+2. Browse recipes (no auth needed)
+3. Login to rate recipes
+4. Give 1-5 star ratings
+5. Update your own ratings
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+### For Everyone:
+1. Browse paginated recipe lists
+2. View individual recipe details
+3. See all ratings for any recipe
 
 ## 👨‍💻 Author
 
@@ -378,5 +456,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **API Base URL**: `http://127.0.0.1:8000/api/`
 - **Admin Panel**: `http://127.0.0.1:8000/admin/`
 - **Browsable API**: `http://127.0.0.1:8000/api/`
+- **Media Files**: `http://127.0.0.1:8000/media/`
 
 **Happy Cooking! 👨‍🍳🍝**
