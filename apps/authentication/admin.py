@@ -5,7 +5,7 @@ from django.contrib.auth.admin import UserAdmin
 
 class UserModelAdmin(UserAdmin):
     model = User
-    list_display = ['id','email','is_active','is_staff','is_superuser']
+    list_display = ['id','email','is_active','is_staff','is_superuser', 'user_type']
     list_filter=['is_superuser']
     search_fields = ('email','first_name')
     ordering = ('email','id')
@@ -14,7 +14,7 @@ class UserModelAdmin(UserAdmin):
     fieldsets = (
         ('User Credentials', {'fields': ('email', 'password')}),
         ('Personal Info', {'fields': ('first_name','last_name')}),
-        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions' )}),
+        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'user_type','groups', 'user_permissions' )}),
         ('Important dates', {'fields': ('last_login','date_joined', 'date_updated' )}),
     )
     add_fieldsets = (
@@ -24,4 +24,5 @@ class UserModelAdmin(UserAdmin):
         }),
     )
 
+# register User model in admin panel
 admin.site.register(User,UserModelAdmin)    
