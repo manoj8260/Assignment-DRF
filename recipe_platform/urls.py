@@ -19,13 +19,15 @@ from django.contrib import admin
 from django.urls import path,include
 from django.conf.urls.static import static
 from django.conf import settings
-from apps.recipes.views import trigger_daily_emails
+from apps.recipes.views import trigger_daily_emails ,TriggerBackupView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('api/auth/', include('apps.authentication.urls')),
     path('api/recipes/',include('apps.recipes.urls')),
-     path('emails/', trigger_daily_emails, name='trigger-daily-emails'),
+    
+    path('emails/', trigger_daily_emails, name='trigger-daily-emails'),
+    path('backup/', TriggerBackupView.as_view(), name='trigger-backup'),
 ]
 
 if settings.DEBUG:

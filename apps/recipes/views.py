@@ -4,7 +4,7 @@ from apps.recipes.serializers import RecipesSeriallizers, RecipeRatingSerializer
 from apps.recipes.models import Recipes, RecipeRatings
 from rest_framework.permissions import IsAuthenticated
 from apps.recipes.permissions import IsSellerOrReadOnly, IsCustomerOrReadOnly
-from apps.recipes.tasks import resize_recipe_image  # Import the Celery task
+from apps.recipes.tasks import resize_recipe_image  ,backup_user_data
 import os
 
 
@@ -51,4 +51,12 @@ def trigger_daily_emails(request):
         return JsonResponse({"status": "success", "message": "Daily email task triggered."})
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)})
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
+
+class TriggerBackupView(APIView):
+    def post(self, request):
+        backup_user_data.delay()
+        return Response({"message": "Backup task triggered successfully"})
     

@@ -1,5 +1,6 @@
 import os
 import csv
+from pathlib import Path
 from PIL import Image
 from django.conf import settings
 from django.core.mail import send_mail
@@ -65,37 +66,45 @@ def send_daily_emails():
         logger.error(f"Error sending daily emails: {str(e)}")
 
 @shared_task(bind=True)
-def backup_user_data_locally(self):
-    """Weekly scheduled service to backup user data to local storage"""
+def backup_user_data(self):
+    """
+    Weekly scheduled service to backup user data locally.
+    """
     try:
-        backup_dir = os.path.join(settings.BASE_DIR, 'backups')
-        os.makedirs(backup_dir, exist_ok=True)
+        backup_dir = Path(settings.BASE_DIR) / 'backups'
+        backup_dir.mkdir(parents=True, exist_ok=True)
+
         timestamp = timezone.localtime().strftime('%Y%m%d_%H%M%S')
 
         # Backup Users
-        users_file = os.path.join(backup_dir, f'users_{timestamp}.csv')
+        users_file = backup_dir / f'users_{timestamp}.csv'
         with open(users_file, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow(['ID', 'FirstName', 'Email', 'Date Joined'])
+            writer.writerow(['ID', 'FirstName', 'Email', 'DateJoined'])
             for user in User.objects.all():
                 writer.writerow([user.id, user.first_name, user.email, user.date_joined])
+        logger.info(f"User data backup created at {users_file}")
 
         # Backup Recipes
-        recipes_file = os.path.join(backup_dir, f'recipes_{timestamp}.csv')
+        recipes_file = backup_dir / f'recipes_{timestamp}.csv'
         with open(recipes_file, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow(['ID', 'Name', 'Seller', 'Created At'])
-            for recipe in Recipes.objects.select_related('seller').all():
-                writer.writerow([recipe.id, recipe.name, recipe.seller.first_name, recipe.created_at])
+            writer.writerow(['ID', 'Name', 'CreatedBy', 'CreatedAt'])
+            for recipe in Recipes.objects.select_related('created_by').all():
+                writer.writerow([recipe.id, recipe.name, recipe.created_by.first_name, recipe.created_at])
+        logger.info(f"Recipe data backup created at {recipes_file}")
 
         # Backup Ratings
-        ratings_file = os.path.join(backup_dir, f'ratings_{timestamp}.csv')
+        ratings_file = backup_dir / f'ratings_{timestamp}.csv'
         with open(ratings_file, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow(['ID', 'Recipe', 'User', 'Rating', 'Created At'])
+            writer.writerow(['ID', 'Recipe', 'User', 'Rating', 'CreatedAt'])
             for rating in RecipeRatings.objects.select_related('recipe', 'user').all():
                 writer.writerow([rating.id, rating.recipe.name, rating.user.first_name, rating.rating, rating.created_at])
+        logger.info(f"Ratings data backup created at {ratings_file}")
 
-        return f"Local backup completed - {timestamp}"
+        return f"Backup completed successfully at {timestamp}"
+
     except Exception as e:
-        return f"Local backup failed: {str(e)}"
+        logger.error(f"Backup failed: {str(e)}")
+        return f"Backup failed: {str(e)}"

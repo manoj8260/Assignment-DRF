@@ -136,9 +136,18 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+     'DEFAULT_THROTTLE_CLASSES': [
+        # 'rest_framework.throttling.UserRateThrottle',   # Limits authenticated users
+        # 'rest_framework.throttling.AnonRateThrottle',   # Limits anonymous users
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'user': '10/day',  # Authenticated users can make 10 requests/day
+        'anon': '1/day',   # Anonymous users can make 1 requests/day
+    }
     
 }
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
