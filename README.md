@@ -362,8 +362,8 @@ Assignment-DRF/
 │ ├── init.py
 │ └── pagination.py
 ├── media/
- └── recipes/ # Recipe images storage
-
+| └── recipes/ # Recipe images storage
+|__ backups/  
 ```
 
 ## 🧪 Testing
